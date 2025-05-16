@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dynamic Product Card</title>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel CDN -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- JSX Script -->
+  <script type="text/babel">
+    const { useState } = React;
+
+    function ProductCard({ name, price, image, discount }) {
+      const cardStyle = {
+        border: '1px solid #ccc',
+        borderRadius: '10px',
+        padding: '15px',
+        width: '250px',
+        margin: '10px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        textAlign: 'center'
+      };
+
+      const imageStyle = {
+        width: '100%',
+        height: '200px',
+        objectFit: 'cover',
+        borderRadius: '5px'
+      };
+
+      const badgeStyle = {
+        backgroundColor: 'red',
+        color: 'white',
+        padding: '5px 10px',
+        borderRadius: '5px',
+        fontSize: '14px',
+        position: 'absolute',
+        top: '10px',
+        right: '10px'
+      };
+
+      return (
+        <div style={{ position: 'relative' }}>
+          <div style={cardStyle}>
+            {discount !== "" && !isNaN(discount) && (
+              <div style={badgeStyle}>{discount}% OFF</div>
+            )}
+            <img src={image} alt={name} style={imageStyle} />
+            <h3>{name}</h3>
+            <p>Price: ₹{price}</p>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [products, setProducts] = useState([]);
+      const [form, setForm] = useState({
+        name: '',
+        price: '',
+        image: '',
+        discount: ''
+      });
+
+      const [errors, setErrors] = useState({});
+
+      const validate = () => {
+        const newErrors = {};
+        if (!form.name.trim()) newErrors.name = "Name is required.";
+        if (!form.price || isNaN(form.price) || form.price <= 0) newErrors.price = "Enter a valid positive price.";
+        if (!form.image.startsWith("http")) newErrors.image = "Image must be a valid URL.";
+        if (form.discount) {
+          const disc = Number(form.discount);
+          if (isNaN(disc) || disc < 0 || disc > 100) {
+            newErrors.discount = "Discount must be between 0 and 100.";
+          }
+        }
+        return newErrors;
+      };
+
+      const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const validationErrors = validate();
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+          setProducts([...products, form]);
+          setForm({ name: '', price: '', image: '', discount: '' });
+        }
+      };
+
+      return (
+        <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+          <h2>Add New Product</h2>
+          <form onSubmit={handleSubmit} style={{ maxWidth: '400px', marginBottom: '30px' }}>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="name"
+                placeholder="Product Name"
+                value={form.name}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="price"
+                placeholder="Price"
+                value={form.price}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.price && <p style={{ color: 'red' }}>{errors.price}</p>}
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="image"
+                placeholder="Image URL"
+                value={form.image}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.image && <p style={{ color: 'red' }}>{errors.image}</p>}
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="discount"
+                placeholder="Discount % (optional)"
+                value={form.discount}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.discount && <p style={{ color: 'red' }}>{errors.discount}</p>}
+            </div>
+
+            <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer' }}>
+              Add Product
+            </button>
+          </form>
+
+          <h2>Product List</h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            {products.map((product, index) => (
+              <ProductCard
+                key={index}
+                name={product.name}
+                price={product.price}
+                image={product.image}
+                discount={product.discount}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

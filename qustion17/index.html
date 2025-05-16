@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User List with Validation</title>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel CDN -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- JSX Script -->
+  <script type="text/babel">
+    const { useState } = React;
+
+    function UserCard({ name, email, age }) {
+      return (
+        <div style={{
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          padding: '10px',
+          margin: '10px 0',
+          backgroundColor: '#f9f9f9'
+        }}>
+          <p><strong>Name:</strong> {name}</p>
+          <p><strong>Email:</strong> {email}</p>
+          <p><strong>Age:</strong> {age}</p>
+        </div>
+      );
+    }
+
+    function UserList({ users }) {
+      return (
+        <div>
+          <h2>User List</h2>
+          {users.map((user, index) => (
+            <UserCard key={index} {...user} />
+          ))}
+        </div>
+      );
+    }
+
+    function App() {
+      const [users, setUsers] = useState([
+        { name: "Aarav Sharma", email: "aarav@example.com", age: 24 }
+      ]);
+
+      const [form, setForm] = useState({
+        name: '',
+        email: '',
+        age: ''
+      });
+
+      const [errors, setErrors] = useState({});
+
+      const validateEmail = (email) =>
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+      const validateForm = () => {
+        const newErrors = {};
+        if (!form.name.trim()) newErrors.name = "Name is required.";
+        if (!validateEmail(form.email)) newErrors.email = "Invalid email format.";
+        if (!form.age || isNaN(form.age) || form.age <= 0 || !Number.isInteger(+form.age))
+          newErrors.age = "Age must be a positive integer.";
+        return newErrors;
+      };
+
+      const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const validationErrors = validateForm();
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+          setUsers([...users, { ...form, age: parseInt(form.age) }]);
+          setForm({ name: '', email: '', age: '' });
+        }
+      };
+
+      return (
+        <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '500px', margin: 'auto' }}>
+          <h1>Add New User</h1>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={form.name}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="text"
+                name="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.email && <p style={{ color: 'red' }}>{errors.email}</p>}
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+              <input
+                type="number"
+                name="age"
+                placeholder="Age"
+                value={form.age}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '8px' }}
+              />
+              {errors.age && <p style={{ color: 'red' }}>{errors.age}</p>}
+            </div>
+            <button type="submit" style={{ padding: '10px 20px', cursor: 'pointer' }}>
+              Add User
+            </button>
+          </form>
+
+          <hr style={{ margin: '30px 0' }} />
+
+          <UserList users={users} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
